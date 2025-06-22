@@ -50,23 +50,26 @@
 
     // Функция для генерации TTS
     async function generateTTS(text) {
-    try {
+      try {
         log('Отправка запроса к Murf.ai TTS API...');
         const response = await fetch(MURF_API_URL, {
-        method: 'POST',
-        headers: {
+          method: 'POST',
+          headers: {
             'Authorization': `Bearer ${MURF_API_KEY}`,
             'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
+          },
+          body: JSON.stringify({
             text: text,
-            voice: 'Matthew', // Используйте голос из списка Murf.ai
-            format: 'MP3',
+            voice: 'Matthew', // Исправленный голос
+            format: 'mp3',
             sampleRate: 24000
-        })
+          })
         });
 
-        if (!response.ok) throw new Error(`TTS API error: ${response.statusText}`);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(`TTS API error: ${response.status} - ${JSON.stringify(errorData)}`);
+        }
 
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
@@ -74,9 +77,9 @@
         audio.src = audioUrl;
         audio.play();
         log('Аудио воспроизводится');
-    } catch (error) {
+      } catch (error) {
         log(`Ошибка: ${error.message}`);
-    }
+      }
     }
 
     // Тестовый донат
