@@ -4,18 +4,30 @@
   <meta charset="UTF-8">
   <title>DonationAlerts TTS Widget</title>
   <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; color: white; background: transparent; }
+    #log { margin-top: 20px; }
+    button { padding: 10px; font-size: 16px; }
+  </style>
 </head>
 <body>
-   <h1>test</h1>
   <audio id="ttsAudio" controls style="display:none;"></audio>
+  <button onclick="testDonation()">Тестовый донат</button>
+  <div id="log">Лог: Ожидание донатов...</div>
   <script>
     // Настройки DonationAlerts
-    const DA_TOKEN = '0IEaT8nLz0zUzrD6fo8J8TZMqfRBJfQj6Vw2e7bF'; // Секретный токен виджета
+    const DA_TOKEN = '0IEaT8nLz0zUzrD6fo8J8TZMqfRBJfQj6Vw2e7bF'; // Замените на ваш токен
     const socket = io('https://socket.donationalerts.ru:443');
 
     // Настройки Murf.ai TTS API
-    const MURF_API_KEY = 'ap2_abd9cd58-4e02-4db9-8f1e-c7bc61380d3f';
+    const MURF_API_KEY = 'ap2_abd9cd58-4e02-4db9-8f1e-c7bc61380d3f'; // Замените на ваш ключ
     const MURF_API_URL = 'https://api.murf.ai/v1/speech/generate';
+
+    // Логирование
+    const log = (message) => {
+      const logDiv = document.getElementById('log');
+      logDiv.innerHTML += `<p>${new Date().toLocaleTimeString()}: ${message}</p>`;
+    };
 
     // Подключение к DonationAlerts WebSocket
     socket.emit('add-user', {
@@ -26,13 +38,20 @@
     // Обработка нового доната
     socket.on('donation', async (data) => {
       const { username, message, amount, currency } = JSON.parse(data);
-      if (!message) return; // Пропускаем, если нет текста
+      if (!message) {
+        log('Донат без сообщения, пропускаем');
+        return;
+      }
 
-      // Формируем текст для озвучивания
       const ttsText = `${username} donated ${amount} ${currency}! Message: ${message}`;
+      log(`Получен донат: ${ttsText}`);
+      await generateTTS(ttsText);
+    });
 
+    // Функция для генерации TTS
+    async function generateTTS(text) {
       try {
-        // Запрос к Murf.ai TTS API
+        log('Отправка запроса к Murf.ai TTS API...');
         const response = await fetch(MURF_API_URL, {
           method: 'POST',
           headers: {
@@ -40,25 +59,38 @@
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
-            text: ttsText,
+            text: text,
             voice: 'en-US-Wavenet-D', // Выберите голос
             format: 'MP3',
             sampleRate: 24000
           })
         });
 
-        if (!response.ok) throw new Error('TTS API error');
+        if (!response.ok) throw new Error(`TTS API error: ${response.statusText}`);
 
-        // Получаем аудио
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
         const audio = document.getElementById('ttsAudio');
         audio.src = audioUrl;
         audio.play();
+        log('Аудио воспроизводится');
       } catch (error) {
-        console.error('Error:', error);
+        log(`Ошибка: ${error.message}`);
       }
-    });
+    }
+
+    // Тестовый донат
+    function testDonation() {
+      const testData = {
+        username: 'TestUser',
+        message: 'Это тестовый донат!',
+        amount: 100,
+        currency: 'RUB'
+      };
+      const ttsText = `${testData.username} donated ${testData.amount} ${testData.currency}! Message: ${testData.message}`;
+      log(`Тестовый донат: ${ttsText}`);
+      generateTTS(ttsText);
+    }
   </script>
 </body>
 </html>
