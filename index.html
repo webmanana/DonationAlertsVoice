@@ -45,7 +45,7 @@
 
       const ttsText = `${username} donated ${amount} ${currency}! Message: ${message}`;
       log(`Получен донат: ${ttsText}`);
-      await generateTTS(ttsText);
+      await generateTTS(ttsText); // Английский текст
     });
 
     // Функция для генерации TTS
@@ -62,10 +62,8 @@
             text: text,
             voice_id: 'en-US-natalie',
             format: 'MP3',
-            sample_rate: 44100,
-            channel_type: 'STEREO',
-            modelVersion: 'GEN2',
-            encode_as_base_64: true
+            encode_as_base_64: true,
+            modelVersion: 'GEN2'
           })
         });
 
@@ -94,7 +92,7 @@
     function testDonation() {
       const testData = {
         username: 'TestUser',
-        message: 'Это тестовый донат!',
+        message: 'This is a test donation!',
         amount: 100,
         currency: 'RUB'
       };
