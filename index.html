@@ -20,8 +20,8 @@
     const socket = io('https://socket.donationalerts.ru:443');
 
     // Настройки Murf.ai TTS API
-    const MURF_API_KEY = 'ap2_abd9cd58-4e02-4db9-8f1e-c7bc61380d3f'; // Замените на ваш ключ
-    const MURF_API_URL = 'https://api.murf.ai/v1/speech/generate';
+    const MURF_API_KEY = 'ap2_abd9cd58-4e02-4db9-8f1e-c7bc61380d3f'; // Ваш ключ
+    const MURF_API_URL = 'https://api.murf.ai/v1/text-to-speech'; // Исправленный эндпоинт
 
     // Логирование
     const log = (message) => {
@@ -60,9 +60,10 @@
           },
           body: JSON.stringify({
             text: text,
-            voice: 'Vladimir', // Исправленный голос
-            format: 'mp3',
-            sampleRate: 24000
+            voice_id: 'en-US-julia', // Исправленный голос
+            format: 'MP3',
+            sample_rate: 44100,
+            channel_type: 'STEREO'
           })
         });
 
