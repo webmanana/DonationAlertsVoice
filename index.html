@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>DonationAlerts TTS Widget</title>
+  <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
+</head>
+<body>
+  <audio id="ttsAudio" controls style="display:none;"></audio>
+  <script>
+    // Настройки DonationAlerts
+    const DA_TOKEN = 'YOUR_DONATIONALERTS_TOKEN'; // Секретный токен виджета
+    const socket = io('https://socket.donationalerts.ru:443');
+
+    // Настройки Murf.ai TTS API
+    const MURF_API_KEY = 'YOUR_MURF_API_KEY';
+    const MURF_API_URL = 'https://api.murf.ai/v1/speech/generate';
+
+    // Подключение к DonationAlerts WebSocket
+    socket.emit('add-user', {
+      token: DA_TOKEN,
+      type: 'alert_widget'
+    });
+
+    // Обработка нового доната
+    socket.on('donation', async (data) => {
+      const { username, message, amount, currency } = JSON.parse(data);
+      if (!message) return; // Пропускаем, если нет текста
+
+      // Формируем текст для озвучивания
+      const ttsText = `${username} donated ${amount} ${currency}! Message: ${message}`;
+
+      try {
+        // Запрос к Murf.ai TTS API
+        const response = await fetch(MURF_API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${MURF_API_KEY}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            text: ttsText,
+            voice: 'en-US-Wavenet-D', // Выберите голос
+            format: 'MP3',
+            sampleRate: 24000
+          })
+        });
+
+        if (!response.ok) throw new Error('TTS API error');
+
+        // Получаем аудио
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const audio = document.getElementById('ttsAudio');
+        audio.src = audioUrl;
+        audio.play();
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    });
+  </script>
+</body>
+</html>
