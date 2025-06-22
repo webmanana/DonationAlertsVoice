@@ -21,7 +21,7 @@
 
     // Настройки Murf.ai TTS API
     const MURF_API_KEY = 'ap2_abd9cd58-4e02-4db9-8f1e-c7bc61380d3f'; // Ваш ключ
-    const MURF_API_URL = 'https://api.murf.ai/v1/text-to-speech'; // Исправленный эндпоинт
+    const MURF_API_URL = 'https://api.murf.ai/v1/speech/generate';
 
     // Логирование
     const log = (message) => {
@@ -60,10 +60,12 @@
           },
           body: JSON.stringify({
             text: text,
-            voice_id: 'en-US-julia', // Исправленный голос
+            voice_id: 'en-US-natalie',
             format: 'MP3',
             sample_rate: 44100,
-            channel_type: 'STEREO'
+            channel_type: 'STEREO',
+            modelVersion: 'GEN2',
+            encode_as_base_64: true
           })
         });
 
@@ -72,12 +74,17 @@
           throw new Error(`TTS API error: ${response.status} - ${JSON.stringify(errorData)}`);
         }
 
-        const audioBlob = await response.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const audio = document.getElementById('ttsAudio');
-        audio.src = audioUrl;
-        audio.play();
-        log('Аудио воспроизводится');
+        const data = await response.json();
+        if (data.encodedAudio) {
+          const audioBlob = new Blob([new Uint8Array(atob(data.encodedAudio).split('').map(c => c.charCodeAt(0)))], { type: 'audio/mp3' });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const audio = document.getElementById('ttsAudio');
+          audio.src = audioUrl;
+          audio.play();
+          log('Аудио воспроизводится');
+        } else {
+          log('Ошибка: encodedAudio отсутствует в ответе');
+        }
       } catch (error) {
         log(`Ошибка: ${error.message}`);
       }
