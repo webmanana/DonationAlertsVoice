@@ -6,14 +6,15 @@
   <script src="https://cdn.socket.io/4.5.0/socket.io.min.js"></script>
 </head>
 <body>
+   <h1>test</h1>
   <audio id="ttsAudio" controls style="display:none;"></audio>
   <script>
     // Настройки DonationAlerts
-    const DA_TOKEN = 'YOUR_DONATIONALERTS_TOKEN'; // Секретный токен виджета
+    const DA_TOKEN = '0IEaT8nLz0zUzrD6fo8J8TZMqfRBJfQj6Vw2e7bF'; // Секретный токен виджета
     const socket = io('https://socket.donationalerts.ru:443');
 
     // Настройки Murf.ai TTS API
-    const MURF_API_KEY = 'YOUR_MURF_API_KEY';
+    const MURF_API_KEY = 'ap2_abd9cd58-4e02-4db9-8f1e-c7bc61380d3f';
     const MURF_API_URL = 'https://api.murf.ai/v1/speech/generate';
 
     // Подключение к DonationAlerts WebSocket
